@@ -133,7 +133,7 @@ class ProfilePage extends ConsumerWidget {
                 icon: Icons.settings,
                 label: 'الإعدادات',
                 onPressed: () {
-                  // TODO: إضافة صفحة الإعدادات
+
                 },
               ),
               const SizedBox(height: 12),

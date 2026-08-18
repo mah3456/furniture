@@ -24,7 +24,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     if(widget.isUpdate){
