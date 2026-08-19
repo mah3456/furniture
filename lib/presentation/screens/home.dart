@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:stores/presentation/providers/auth_provider.dart';
+import 'package:stores/presentation/screens/products/product_DetailsScreen.dart';
 import 'package:stores/presentation/screens/user/my_products.dart';
 import 'package:stores/presentation/screens/products/add_ProductScreen.dart';
 import 'package:stores/presentation/screens/user/notifications.dart';
@@ -85,6 +87,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ref.read(productProvider.notifier).loadProducts();
               } else if(index ==1){
                 ref.read(productProvider.notifier).loadUserProducts(userId: uid!);
+              } else if(index == 3){
+                ref.read(authProvider.notifier).refreshUserData();
               }
 
               setState(() {
@@ -131,236 +135,291 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-// ✅ الصفحة الرئيسية - عرض المنتجات
+
 class HomePage extends ConsumerWidget {
   const HomePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final productState = ref.watch(productProvider);
+    final notifier = ref.read(productProvider.notifier);
+
+    // تصفية المنتجات لعرضها في الأقسام المختلفة
+    final allProducts = productState.products;
+    final recommendedProducts = allProducts.take(4).toList(); // أول 4 منتجات
+    final popularProducts = allProducts.skip(4).take(4).toList(); // المنتجات التالية
 
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: TextButton(
-          child: Text('test' , style: TextStyle(color: Colors.white),),
-
-          onPressed: () async{
-
-            final uid = await shared.getString('user_id');
-
-            print(uid);
-
-
-          },
+        title: const Text(
+          'Find Furniture',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          // زر تحديث المنتجات
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.search),
             onPressed: () {
-              ref.read(productProvider.notifier).loadProducts();
+              // فتح صفحة البحث
             },
           ),
         ],
       ),
-      body:  Column(
-        children: [
-     
-
-          // قائمة المنتجات
-          Expanded(
-            child: productState.isLoading
-                ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: Colors.blue),
-                  SizedBox(height: 16),
-                  Text(
-                    'جاري تحميل المنتجات...',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
+      body: productState.isLoading
+          ? const Center(
+        child: CircularProgressIndicator(color: Colors.blue),
+      )
+          : productState.error != null
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Colors.red.shade300,
+              size: 80,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'حدث خطأ في تحميل المنتجات',
+              style: TextStyle(
+                color: Colors.red.shade400,
+                fontSize: 16,
               ),
-            )
-                : productState.error != null
-                ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    color: Colors.red.shade300,
-                    size: 80,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'لا يوجد اي منتجات'!,
-                    style: TextStyle(
-                      color: Colors.red.shade400,
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      ref.read(productProvider.notifier)
-                          .loadProducts();
-
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('إعادة المحاولة'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
-                : productState.products.isEmpty
-                ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.shopping_bag_outlined,
-                    size: 80,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'لا توجد منتجات بعد',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'اضغط على زر + لإضافة منتج جديد',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
-              ),
-            )
-                : RefreshIndicator(
-              onRefresh: () async {
-                await ref
-                    .read(productProvider.notifier)
-                    .loadProducts();
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                ref.read(productProvider.notifier).loadProducts();
               },
-              child: ListView.builder(
-                padding: const EdgeInsets.only(
-                  bottom: 80,
-                  left: 8,
-                  right: 8,
+              icon: const Icon(Icons.refresh),
+              label: const Text('إعادة المحاولة'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                itemCount: productState.products.length,
-                itemBuilder: (context, index) {
-                  final product = productState.products[index];
-                  return ProductCard(
-                    product: product,
-                    onDelete: () {
-                      _showDeleteDialog(
-                          context, ref, product);
-                    },
-                  );
-                },
               ),
             ),
+          ],
+        ),
+      )
+          : productState.products.isEmpty
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.shopping_bag_outlined,
+              size: 80,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'لا توجد منتجات بعد',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'اضغط على زر + لإضافة منتج جديد',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade500,
+              ),
+            ),
+          ],
+        ),
+      )
+          : RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(productProvider.notifier).loadProducts();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 80),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // شريط البحث
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1,
+                        blurRadius: 5,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search',
+                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onChanged: (value) {
+                      // تنفيذ البحث
+                    },
+                  ),
+                ),
+              ),
+              // أزرار التصنيف (Lamp, Chair, Sofa)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  children: [
+                    _buildCategoryButton('Lamp', Icons.lightbulb_outline),
+                    const SizedBox(width: 12),
+                    _buildCategoryButton('Chair', Icons.chair_outlined),
+                    const SizedBox(width: 12),
+                    _buildCategoryButton('Sofa', Icons.weekend_outlined),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              // قسم Recommended
+              if (recommendedProducts.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Recommended>',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          'See All',
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 200,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: recommendedProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = recommendedProducts[index];
+                      return ProductCard(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProductDetailsScreen(product: product),
+                            ),
+                          );
+                        },
+                        product: product,
+                        onDelete: null, // لا نعرض زر الحذف في الصفحة الرئيسية
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+              // قسم Popular
+              if (popularProducts.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Popular>',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          'See All',
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 200,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: popularProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = popularProducts[index];
+                      return ProductCard(
+                        onTap: () => '',
+                        product: product,
+                        onDelete: null, // لا نعرض زر الحذف في الصفحة الرئيسية
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-
-
-  Widget _buildStatItem({required IconData icon,required String value,required String label}) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white, size: 28),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+  // دالة لإنشاء زر التصنيف
+  Widget _buildCategoryButton(String label, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-
-
-
-
-  // مربع حوار حذف المنتج
-  void _showDeleteDialog(
-      BuildContext context, WidgetRef ref, dynamic product) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('حذف المنتج'),
-        content: Text('هل أنت متأكد من حذف "${product.name}"؟'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // إعادة تحميل المنتجات بعد الحذف
-              ref.read(productProvider.notifier).loadProducts();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('تم حذف ${product.name}'),
-                  backgroundColor: Colors.red,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              );
-            },
-            child: const Text(
-              'حذف',
-              style: TextStyle(color: Colors.red),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20, color: Colors.blue),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
-
-

@@ -171,6 +171,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                         ? null
                         : () {
                             if (_formKey.currentState!.validate()) {
+
                               ref.read(productProvider.notifier).addProduct(
                                name: _nameController.text.trim(),
                                type: _selectedType,

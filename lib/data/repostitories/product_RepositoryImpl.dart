@@ -39,10 +39,10 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteProduct(String id) async {
+  Future<Either<Failure, int>> deleteProduct({required String id}) async {
     try {
-      await localDataSource.deleteProduct(id);
-      return const Right(null);
+      var res = await localDataSource.deleteProduct(id:id);
+      return  Right(res);
     } on CacheException catch (e) {
       return Left(CacheFailure(e.message));
     } catch (e) {

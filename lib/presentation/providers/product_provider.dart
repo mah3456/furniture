@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:stores/main.dart';
 import '../../Domain/entities/product_entity.dart';
 import '../../Domain/repostitories/product_Repository.dart';
+import '../../core/errors/failures.dart';
 import '../../core/usecases/usecase.dart';
 import '../../data/datasource/local/productLocal_DataSource.dart';
 import '../../data/repostitories/product_RepositoryImpl.dart';
 import '../../Domain/usecases/product/addProduct_UseCase.dart';
 import '../../Domain/usecases/product/getProducts_UseCase.dart';
 import '../../Domain/usecases/product/getUser_products.dart';
+import '../../Domain/usecases/product/deleteProduct_usecase.dart';
+
 
 
 // DataSource Provider
@@ -38,6 +41,13 @@ final getUserProductsUseCaseProvider = Provider<GetUserProductsUseCase>((ref) {
   final repository = ref.watch(productRepositoryProvider);
   return GetUserProductsUseCase(repository: repository);
 });
+
+
+final deleteProductProvider = Provider<DeleteProductUsecase>((ref) {
+  final repository = ref.watch(productRepositoryProvider);
+  return DeleteProductUsecase(repository: repository);
+});
+
 
 
 // Product State
@@ -70,12 +80,14 @@ class ProductNotifier extends StateNotifier<ProductState> {
   final AddProductUseCase addProductUseCase;
   final GetProductsUseCase getProductsUseCase;
   final GetUserProductsUseCase getUserProductsUseCase;
+  final DeleteProductUsecase deleteProductUsecase;
 
 
   ProductNotifier({
     required this.addProductUseCase,
     required this.getProductsUseCase,
-    required this.getUserProductsUseCase
+    required this.getUserProductsUseCase,
+    required this.deleteProductUsecase
   }) : super(ProductState()) {
     loadProducts();
   }
@@ -142,10 +154,60 @@ class ProductNotifier extends StateNotifier<ProductState> {
       },
           (product) {
         // إعادة تحميل القائمة بعد الإضافة
-        loadProducts();
+        loadUserProducts(userId: uid!);
       },
     );
   }
+
+
+
+
+  Future<bool> deleteProduct({required String id}) async {
+    // إظهار حالة التحميل مع الاحتفاظ بالمنتجات الحالية
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+    );
+
+    final result = await deleteProductUsecase(DeleteParams(id));
+
+    bool isSuccess = false;
+    result.fold(
+          (failure) {
+        state = state.copyWith(
+          isLoading: false,
+          error: _mapFailureToMessage(failure),
+        );
+      },
+          (deletedCount) {
+        // إزالة المنتج المحذوف من القائمة
+        final updatedProducts = state.products.where((p) => p.id != id).toList();
+        state = state.copyWith(
+          isLoading: false,
+          products: updatedProducts,
+          error: null,
+        );
+        isSuccess = true;
+      },
+    );
+
+    return isSuccess;
+  }
+
+
+
+  String _mapFailureToMessage(Failure failure) {
+    if (failure is ServerFailure) {
+      return 'خطأ في الخادم: ${failure.message}';
+    }  else if (failure is CacheFailure) {
+      return 'خطأ في التخزين المؤقت';
+    } else {
+      return 'حدث خطأ غير متوقع';
+    }
+  }
+
+
+
 
   void clearError() {
     state = state.copyWith(error: null);
@@ -157,11 +219,12 @@ final productProvider = StateNotifierProvider<ProductNotifier, ProductState>((re
   final addProductUseCase = ref.watch(addProductUseCaseProvider);
   final getProductsUseCase = ref.watch(getProductsUseCaseProvider);
   final getUserProductsUseCase = ref.watch(getUserProductsUseCaseProvider);
-
+  final deleteProductUsecase = ref.watch(deleteProductProvider);
 
   return ProductNotifier(
     addProductUseCase: addProductUseCase,
     getProductsUseCase: getProductsUseCase,
-    getUserProductsUseCase :getUserProductsUseCase
+    getUserProductsUseCase :getUserProductsUseCase,
+    deleteProductUsecase: deleteProductUsecase
   );
 });

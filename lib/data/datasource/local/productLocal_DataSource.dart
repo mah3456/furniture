@@ -6,7 +6,7 @@ abstract class ProductLocalDataSource {
   Future<ProductModel> addProduct(ProductModel product);
   Future<List<ProductModel>> getProducts();
   Future<List<ProductModel>> getUserProducts({required String userId});
-  Future<void> deleteProduct(String id);
+  Future<int> deleteProduct({required String id});
 
   Future<List<ProductModel>> getProductsWithUsers({required String userId});
 
@@ -108,19 +108,20 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   @override
-  Future<void> deleteProduct(String id) async {
+  Future<int> deleteProduct({required String id}) async {
     print('حذف المنتج رقم: $id');
     final db = await _database;
 
     try {
-      await db.delete(
+      var res = await db.delete(
         tableName,
         where: 'id = ?',
         whereArgs: [int.parse(id)],
       );
-      print('تم حذف المنتج بنجاح');
+
+      return res;
     } catch (e) {
-      print('❌ فشل حذف المنتج: $e');
+
       rethrow;
     }
   }

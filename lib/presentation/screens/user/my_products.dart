@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../main.dart';
 import '../../providers/product_provider.dart';
 import '../../widgets/product/product_Card.dart';
+import '../products/product_DetailsScreen.dart';
 
 
 
@@ -14,6 +15,7 @@ class MyProducts extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final productState = ref.watch(productProvider);
+    final productNotifier = ref.read(productProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -63,6 +65,7 @@ class MyProducts extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
+
                 _buildStatItem(
                   Icons.inventory_2,
                   '${productState.products.length}',
@@ -84,11 +87,11 @@ class MyProducts extends ConsumerWidget {
 
           // قائمة المنتجات
           Expanded(
-            child: productState.isLoading
-                ? const Center(
+            child: productState.isLoading ? const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+
                   CircularProgressIndicator(color: Colors.blue),
                   SizedBox(height: 16),
                   Text(
@@ -100,9 +103,7 @@ class MyProducts extends ConsumerWidget {
                   ),
                 ],
               ),
-            )
-                : productState.error != null
-                ? Center(
+            ) : productState.error != null ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -175,20 +176,30 @@ class MyProducts extends ConsumerWidget {
                     .read(productProvider.notifier)
                     .loadProducts();
               },
-              child: ListView.builder(
+              child: ListView.separated(
+                separatorBuilder: (context, index) => SizedBox(height: 20,),
                 padding: const EdgeInsets.only(
                   bottom: 80,
-                  left: 8,
-                  right: 8,
+                  left: 23,
+                  right: 23,
                 ),
                 itemCount: productState.products.length,
                 itemBuilder: (context, index) {
                   final product = productState.products[index];
                   return ProductCard(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductDetailsScreen(product: product),
+                        ),
+                      );
+                    },
                     product: product,
                     onDelete: () {
                       _showDeleteDialog(
-                          context, ref, product);
+                        context: context, ref: ref, product: product ,notifier: productNotifier
+                      );
                     },
                   );
                 },
@@ -241,8 +252,12 @@ class MyProducts extends ConsumerWidget {
   }
 
   // مربع حوار حذف المنتج
-  void _showDeleteDialog(
-      BuildContext context, WidgetRef ref, dynamic product) {
+  void _showDeleteDialog({required BuildContext context,
+    required WidgetRef ref,
+    required dynamic product,
+    required ProductNotifier notifier
+
+  }) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -256,11 +271,21 @@ class MyProducts extends ConsumerWidget {
             onPressed: () => Navigator.pop(context),
             child: const Text('إلغاء'),
           ),
+
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
               // إعادة تحميل المنتجات بعد الحذف
-              ref.read(productProvider.notifier).loadProducts();
+
+              final uid = await shared.getString('user_id');
+
+
+              ref.read(productProvider.notifier).loadUserProducts(userId: uid!);
+
+              notifier.deleteProduct(id: product.id);
+
+
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('تم حذف ${product.name}'),

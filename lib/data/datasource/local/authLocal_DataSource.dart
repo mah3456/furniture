@@ -23,6 +23,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Database? _database;
   static const String userTable = 'users';
   static const String productTable = 'products';
+  static const String commentTable ='comments';
 
   // مفاتيح SharedPreferences
   static const String _isLoggedInKey = 'is_logged_in';
@@ -90,6 +91,22 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
         )
       ''');
       print('✅ تم إنشاء جدول $productTable بنجاح');
+
+
+
+      await db.execute('''
+          CREATE TABLE $commentTable (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            content TEXT NOT NULL,
+            rating INTEGER CHECK(rating >= 1 AND rating <= 5),
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (product_id) REFERENCES $productTable(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES $userTable(id) ON DELETE CASCADE
+          )
+        ''');
 
       print('🎉 تم إنشاء جميع الجداول بنجاح');
     } catch (e) {
