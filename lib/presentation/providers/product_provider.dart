@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:stores/Domain/usecases/product/update_ProductUseCase.dart';
 import 'package:stores/main.dart';
 import '../../Domain/entities/product_entity.dart';
 import '../../Domain/repostitories/product_Repository.dart';
@@ -31,6 +32,14 @@ final addProductUseCaseProvider = Provider<AddProductUseCase>((ref) {
   return AddProductUseCase(repository: repository);
 });
 
+
+
+final updateUsecaseProvider = Provider<UpdateProductUseCase>((ref) {
+  final repository = ref.watch(productRepositoryProvider);
+  return UpdateProductUseCase(repository: repository);
+});
+
+
 final getProductsUseCaseProvider = Provider<GetProductsUseCase>((ref) {
   final repository = ref.watch(productRepositoryProvider);
   return GetProductsUseCase(repository: repository);
@@ -43,7 +52,8 @@ final getUserProductsUseCaseProvider = Provider<GetUserProductsUseCase>((ref) {
 });
 
 
-final deleteProductProvider = Provider<DeleteProductUsecase>((ref) {
+
+final deleteProductUsecaseProvider = Provider<DeleteProductUsecase>((ref) {
   final repository = ref.watch(productRepositoryProvider);
   return DeleteProductUsecase(repository: repository);
 });
@@ -81,13 +91,15 @@ class ProductNotifier extends StateNotifier<ProductState> {
   final GetProductsUseCase getProductsUseCase;
   final GetUserProductsUseCase getUserProductsUseCase;
   final DeleteProductUsecase deleteProductUsecase;
+  final UpdateProductUseCase updateProductUseCase;
 
 
   ProductNotifier({
     required this.addProductUseCase,
     required this.getProductsUseCase,
     required this.getUserProductsUseCase,
-    required this.deleteProductUsecase
+    required this.deleteProductUsecase,
+    required this.updateProductUseCase
   }) : super(ProductState()) {
     loadProducts();
   }
@@ -161,6 +173,30 @@ class ProductNotifier extends StateNotifier<ProductState> {
 
 
 
+  Future<void> updateProduct({required String name,required String type,required double price , required String description}) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    final uid = await shared.getString('user_id');
+
+
+    final product = Product(Userid: uid, description: description, name: name, type: type, price: price);
+    final result = await updateProductUseCase(UpdateProductParams(product: product));
+
+    result.fold(
+          (failure) {
+        state = state.copyWith(
+          isLoading: false,
+          error: failure.message,
+        );
+      },
+          (product) {
+        // إعادة تحميل القائمة بعد الإضافة
+        loadUserProducts(userId: uid!);
+      },
+    );
+  }
+
+
 
   Future<bool> deleteProduct({required String id}) async {
     // إظهار حالة التحميل مع الاحتفاظ بالمنتجات الحالية
@@ -217,14 +253,16 @@ class ProductNotifier extends StateNotifier<ProductState> {
 // Product Provider
 final productProvider = StateNotifierProvider<ProductNotifier, ProductState>((ref) {
   final addProductUseCase = ref.watch(addProductUseCaseProvider);
+  final updateProductUsecase = ref.watch(updateUsecaseProvider);
   final getProductsUseCase = ref.watch(getProductsUseCaseProvider);
   final getUserProductsUseCase = ref.watch(getUserProductsUseCaseProvider);
-  final deleteProductUsecase = ref.watch(deleteProductProvider);
+  final deleteProductUsecase = ref.watch(deleteProductUsecaseProvider);
 
   return ProductNotifier(
     addProductUseCase: addProductUseCase,
+    updateProductUseCase: updateProductUsecase,
     getProductsUseCase: getProductsUseCase,
     getUserProductsUseCase :getUserProductsUseCase,
-    deleteProductUsecase: deleteProductUsecase
+    deleteProductUsecase: deleteProductUsecase,
   );
 });

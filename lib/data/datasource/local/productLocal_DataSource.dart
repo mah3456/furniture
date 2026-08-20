@@ -1,9 +1,12 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:stores/Domain/entities/product_entity.dart';
 import '../../models/product_Model.dart';
 import 'authLocal_DataSource.dart';
 
 abstract class ProductLocalDataSource {
   Future<ProductModel> addProduct(ProductModel product);
+  Future<ProductModel> updateProduct({required Product product});
+
   Future<List<ProductModel>> getProducts();
   Future<List<ProductModel>> getUserProducts({required String userId});
   Future<int> deleteProduct({required String id});
@@ -13,7 +16,6 @@ abstract class ProductLocalDataSource {
 }
 
 class ProductLocalDataSourceImpl implements ProductLocalDataSource {
-  // Reference to auth data source for shared database
   final _authDataSource = AuthLocalDataSourceImpl() ;
 
   static const String tableName = 'products';
@@ -50,6 +52,61 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       );
     } catch (e) {
       print('❌ فشل إضافة المنتج: $e');
+      rethrow;
+    }
+  }
+
+
+
+
+  @override
+  Future<ProductModel> updateProduct({required Product product}) async {
+    print('🔄 تحديث المنتج رقم: ${product.id}');
+    final db = await _database;
+
+    try {
+      // التحقق من وجود المنتج
+      final existing = await db.query(
+        tableName,
+        where: 'id = ?',
+        whereArgs: [int.parse(product.id!)],
+      );
+
+      if (existing.isEmpty) {
+        throw Exception('المنتج غير موجود');
+      }
+
+      // تحديث البيانات
+      final result = await db.update(
+        tableName,
+        {
+          'user_id': int.parse(product.Userid!),
+          'name': product.name,
+          'type': product.type,
+          'description': product.description,
+          'price': product.price,
+        },
+        where: 'id = ?',
+        whereArgs: [int.parse(product.id!)],
+      );
+
+      if (result == 0) {
+        throw Exception('فشل تحديث المنتج');
+      }
+
+      print('✅ تم تحديث المنتج رقم: ${product.id} بنجاح');
+
+      // إرجاع المنتج المحدث
+      return ProductModel(
+        id: product.id,
+        Userid: product.Userid,
+        name: product.name,
+        type: product.type,
+        description: product.description,
+        price: product.price,
+      );
+    } catch (e) {
+      print('❌ فشل تحديث المنتج: $e');
       rethrow;
     }
   }

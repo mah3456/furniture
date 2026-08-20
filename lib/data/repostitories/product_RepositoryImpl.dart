@@ -25,6 +25,24 @@ class ProductRepositoryImpl implements ProductRepository {
     }
   }
 
+
+
+  @override
+  Future<Either<Failure, Product>> updateProduct({required Product product}) async {
+    try {
+      print('🔄 تحديث المنتج في الـ Repository');
+      final products = await localDataSource.updateProduct(product: product);
+
+
+      return Right(products);
+    }  on CacheException catch (e) {
+      return Left(CacheFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('حدث خطأ غير متوقع: ${e.toString()}'));
+    }
+  }
+
+
   @override
   Future<Either<Failure, List<Product>>> getProducts() async {
     try {

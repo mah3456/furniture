@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:stores/Domain/entities/product_entity.dart';
 
 import '../../providers/product_provider.dart';
 
 class AddProductScreen extends ConsumerStatefulWidget {
-  const AddProductScreen({super.key});
+
+  final Product? product;
+
+  const AddProductScreen({super.key,  this.product});
 
   @override
   ConsumerState<AddProductScreen> createState() => _AddProductScreenState();
@@ -22,6 +26,23 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   final List<String> _productTypes = ['إلكترونيات', 'ملابس', 'طعام', 'أثاث', 'أخرى'];
   String _selectedType = 'إلكترونيات';
 
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    if(widget.product != null) {
+      _nameController.text = widget.product!.name ?? 'none';
+      _typeController.text = widget.product!.type ?? 'none';
+      _priceController.text = widget.product!.price.toString() ?? 'none';
+      _descriptionController.text = widget.product!.description ?? 'none';
+      _selectedType = widget.product!.type ?? 'none';
+    }
+
+  }
+
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -36,8 +57,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('إضافة منتج جديد'),
-        backgroundColor: Colors.blue,
+        title: Text(widget.product != null ? 'تحديث بيانات المنتج' : 'إضافة منتج جديد'),
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -89,7 +109,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                   },
                 ),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: 25),
 
                 // نوع المنتج
                 DropdownButtonFormField<String>(
@@ -112,7 +132,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                   },
                 ),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: 25),
 
                 // سعر المنتج
                 TextFormField(
@@ -139,7 +159,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                   },
                 ),
                 
-                const SizedBox(height: 32),
+                const SizedBox(height: 25),
 
                 TextFormField(
                   controller: _descriptionController,
@@ -172,13 +192,26 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                         : () {
                             if (_formKey.currentState!.validate()) {
 
-                              ref.read(productProvider.notifier).addProduct(
-                               name: _nameController.text.trim(),
-                               type: _selectedType,
-                               price: double.parse(_priceController.text.trim()),
-                               description: _descriptionController.text.trim()
+                              if(widget.product == null){
+                                ref.read(productProvider.notifier).addProduct(
+                                    name: _nameController.text.trim(),
+                                    type: _selectedType,
+                                    price: double.parse(_priceController.text.trim()),
+                                    description: _descriptionController.text.trim()
 
-                              );
+                                );
+
+                              } {
+
+                                ref.read(productProvider.notifier).addProduct(
+                                    name: _nameController.text.trim(),
+                                    type: _selectedType,
+                                    price: double.parse(_priceController.text.trim()),
+                                    description: _descriptionController.text.trim()
+
+                                );
+
+                              }
                               
                               // عرض رسالة نجاح
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -201,13 +234,13 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Icon(Icons.add),
+                        : widget.product != null ? SizedBox() :const Icon(Icons.add) ,
                     label: Text(
-                      productState.isLoading ? 'جاري الإضافة...' : 'إضافة المنتج',
+                      productState.isLoading ? 'جاري الإضافة...' : widget.product != null ? 'تحديث البيانات' : 'إضافة منتج جديد',
                       style: const TextStyle(fontSize: 18),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Theme.of(context).colorScheme.onPrimary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),

@@ -18,9 +18,9 @@ class MyProducts extends ConsumerWidget {
     final productNotifier = ref.read(productProvider.notifier);
 
     return Scaffold(
+
       appBar: AppBar(
         title: const Text('منتجاتي'),
-        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -39,6 +39,8 @@ class MyProducts extends ConsumerWidget {
           ),
         ],
       ),
+
+
       body: Column(
         children: [
           
@@ -67,19 +69,19 @@ class MyProducts extends ConsumerWidget {
               children: [
 
                 _buildStatItem(
-                  Icons.inventory_2,
-                  '${productState.products.length}',
-                  'منتج',
+                 icon:  Icons.inventory_2,
+                 value:  '${productState.products.length}',
+                 label:  'منتج',
                 ),
                 _buildStatItem(
-                  Icons.attach_money,
-                  _calculateTotalPrice(productState.products),
-                  'الإجمالي',
+                 icon:  Icons.attach_money,
+                 value: _calculateTotalPrice(productState.products),
+                 label: 'الإجمالي',
                 ),
                 _buildStatItem(
-                  Icons.category,
-                  '${_getUniqueTypes(productState.products)}',
-                  'نوع',
+                  icon: Icons.category,
+                  value: '${_getUniqueTypes(productState.products)}',
+                  label: 'نوع',
                 ),
               ],
             ),
@@ -212,23 +214,23 @@ class MyProducts extends ConsumerWidget {
   }
 
   // عنصر إحصائية
-  Widget _buildStatItem(IconData icon, String value, String label) {
+  Widget _buildStatItem({required IconData icon, required String value, required String label}) {
     return Column(
       children: [
         Icon(icon, color: Colors.white, size: 28),
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white,
             fontSize: 12,
           ),
         ),

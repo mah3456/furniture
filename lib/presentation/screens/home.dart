@@ -10,6 +10,7 @@ import 'package:stores/presentation/screens/user/profile.dart';
 import '../../main.dart';
 import '../providers/product_provider.dart';
 import '../widgets/product/product_Card.dart';
+import '../widgets/theme_ToggleWithFeedback.dart';
 
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -44,6 +45,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // زر الإضافة العائم - يظهر فقط في الصفحة الرئيسية
       floatingActionButton: _currentIndex == 1
           ? FloatingActionButton.extended(
+        backgroundColor: Theme.of(context).colorScheme.onPrimary,
         onPressed: () {
           Navigator.push(
             context,
@@ -55,10 +57,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ref.read(productProvider.notifier).loadProducts();
           });
         },
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('إضافة منتج'),
+        icon:   Icon(Icons.add , color: Theme.of(context).colorScheme.primary,),
+        label:  Text('إضافة منتج' , style: TextStyle(color: Theme.of(context).colorScheme.primary),),
       )
           : null,
       bottomNavigationBar: Container(
@@ -96,7 +96,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               });
             },
             type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
             selectedItemColor: Colors.blue,
             unselectedItemColor: Colors.grey,
             selectedLabelStyle: const TextStyle(
@@ -150,19 +149,20 @@ class HomePage extends ConsumerWidget {
     final popularProducts = allProducts.skip(4).take(4).toList(); // المنتجات التالية
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: AppBar(
+
+        leading: ThemeToggleWithFeedback(),
+
         automaticallyImplyLeading: false,
         title: const Text(
           'Find Furniture',
           style: TextStyle(
-            color: Colors.white,
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        // backgroundColor: Colors.blue,
+        // foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
@@ -258,7 +258,6 @@ class HomePage extends ConsumerWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -287,11 +286,11 @@ class HomePage extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
                   children: [
-                    _buildCategoryButton('Lamp', Icons.lightbulb_outline),
+                    _buildCategoryButton(label: 'Lamp', icon: Icons.lightbulb_outline, context: context ),
                     const SizedBox(width: 12),
-                    _buildCategoryButton('Chair', Icons.chair_outlined),
+                    _buildCategoryButton(label: 'Chair',icon:  Icons.chair_outlined, context: context),
                     const SizedBox(width: 12),
-                    _buildCategoryButton('Sofa', Icons.weekend_outlined),
+                    _buildCategoryButton(label: 'Sofa', icon: Icons.weekend_outlined , context: context),
                   ],
                 ),
               ),
@@ -304,18 +303,16 @@ class HomePage extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Recommended>',
+                        'Recommended',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
                         ),
                       ),
                       TextButton(
                         onPressed: () {},
                         child: const Text(
                           'See All',
-                          style: TextStyle(color: Colors.blue),
                         ),
                       ),
                     ],
@@ -396,19 +393,19 @@ class HomePage extends ConsumerWidget {
   }
 
   // دالة لإنشاء زر التصنيف
-  Widget _buildCategoryButton(String label, IconData icon) {
+  Widget _buildCategoryButton(
+      {required String label,required IconData icon,required BuildContext context}) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          // border: Border.all(color: Colors.grey.shade200),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: Colors.blue),
+            Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
             const SizedBox(width: 6),
             Text(
               label,

@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:stores/presentation/screens/products/add_ProductScreen.dart';
 import '../../../Domain/entities/commen_tEntity.dart';
 import '../../../Domain/entities/product_entity.dart';
 import '../../../main.dart';
@@ -41,7 +42,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
 
     return Scaffold(
 
-      backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
           // SliverAppBar مع الصورة
@@ -62,16 +62,16 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddCommentDialog(
-          product: widget.product,
-          context: context ,
-          notifier: commentNotifier ,
-          state: commentState
-        ),
-        backgroundColor: Colors.blue.shade700,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_comment),
-        label: const Text('أضف تعليق'),
+        backgroundColor:  Theme.of(context).colorScheme.onPrimary,
+        onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => AddProductScreen(product: widget.product))),
+        // onPressed: () => _showAddCommentDialog(
+        //   product: widget.product,
+        //   context: context ,
+        //   notifier: commentNotifier ,
+        //   state: commentState
+        // ),
+        icon:  Icon(Icons.add_comment  , color:  Theme.of(context).colorScheme.secondary),
+        label:  Text('أضف تعليق' , style: TextStyle(color:  Theme.of(context).colorScheme.secondary),),
         elevation: 4,
       )
     );
@@ -90,7 +90,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         title: Text(
           widget.product.name,
           style: const TextStyle(
-            color: Colors.white,
             fontWeight: FontWeight.bold,
             shadows: [
               Shadow(
@@ -101,6 +100,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             ],
           ),
         ),
+
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -123,7 +123,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   child: Icon(
                     Icons.shopping_bag,
                     size: 200,
-                    color: Colors.white,
                   ),
                 ),
               ),
@@ -217,7 +216,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(30),
           topRight: Radius.circular(30),
@@ -243,10 +241,10 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blueGrey,
                   ),
                 ),
               ),
+
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
@@ -320,18 +318,20 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           const SizedBox(height: 16),
 
           // وصف المنتج
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              widget.product.description,
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey.shade700,
-                height: 1.8,
+          Card(
+            borderOnForeground: true,
+            elevation: 0,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                widget.product.description,
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.8,
+                ),
               ),
             ),
           ),
@@ -391,35 +391,35 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     required String label,
     required String value,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.blue.shade400, size: 20),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey.shade600,
+    return Card(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: Colors.blue.shade400, size: 20),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade600,
+              ),
             ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.blueGrey.shade800,
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.blueGrey.shade800,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -723,116 +723,114 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
 
 
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // رأس التعليق
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: Colors.blue.shade100,
-                child: Text(
-                  comment.userId[0].toUpperCase(),
+    return Card(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 0),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // رأس التعليق
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor: Colors.blue.shade100,
+                  child: Text(
+                    comment.userId[0].toUpperCase(),
+                    style: TextStyle(
+                      color: Colors.blue.shade700,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+      
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'مستخدم ${comment.userId}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Row(
+                        children: List.generate(5, (index) {
+                          return Icon(
+                            index < comment.rating
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: Colors.amber.shade600,
+                            size: 16,
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+      
+                Text(
+                  _formatDate(DateTime.parse(comment.createdAt)),
                   style: TextStyle(
-                    color: Colors.blue.shade700,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+      
+            const SizedBox(height: 12),
+      
+            // محتوى التعليق
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                comment.content,
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.6,
+                ),
+              ),
+            ),
+      
+            if(comment.userId == uid)
+            if (comment.id != null) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () {
+                    _showDeleteDialog(context, comment.id!);
+                  },
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: const Text('حذف'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.red.shade400,
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(0, 0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'مستخدم ${comment.userId}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.blueGrey,
-                        fontSize: 14,
-                      ),
-                    ),
-                    Row(
-                      children: List.generate(5, (index) {
-                        return Icon(
-                          index < comment.rating
-                              ? Icons.star
-                              : Icons.star_border,
-                          color: Colors.amber.shade600,
-                          size: 16,
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                _formatDate(DateTime.parse(comment.createdAt)),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
-                ),
-              ),
             ],
-          ),
-
-          const SizedBox(height: 12),
-
-          // محتوى التعليق
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              comment.content,
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey.shade800,
-                height: 1.6,
-              ),
-            ),
-          ),
-
-          if(comment.userId == uid)
-          if (comment.id != null) ...[
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: () {
-                  _showDeleteDialog(context, comment.id!);
-                },
-                icon: const Icon(Icons.delete_outline, size: 18),
-                label: const Text('حذف'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red.shade400,
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(0, 0),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ),
-            ),
           ],
-        ],
+        ),
       ),
     );
   }

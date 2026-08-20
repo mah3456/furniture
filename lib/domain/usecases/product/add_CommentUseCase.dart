@@ -21,4 +21,6 @@ class AddCommentUsecase implements UseCase<CommentEntity, AddCommentParams> {
 class AddCommentParams {
   final CommentEntity product;
   AddCommentParams(this.product);
+
+
 }

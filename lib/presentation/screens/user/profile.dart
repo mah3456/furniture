@@ -30,8 +30,6 @@ class ProfilePage extends ConsumerWidget {
         ],
 
         title: const Text('حسابي'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
       ),
@@ -63,7 +61,6 @@ class ProfilePage extends ConsumerWidget {
                     style: const TextStyle(
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue,
                     ),
                   ),
                 ),
@@ -120,6 +117,7 @@ class ProfilePage extends ConsumerWidget {
               const SizedBox(height: 32),
               // أزرار الإجراءات
               _buildActionButton(
+                context: context,
                 icon: Icons.edit,
                 label: 'تعديل الملف الشخصي',
                 onPressed: () {
@@ -128,6 +126,7 @@ class ProfilePage extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               _buildActionButton(
+                context: context,
                 icon: Icons.settings,
                 label: 'الإعدادات',
                 onPressed: () {
@@ -136,6 +135,7 @@ class ProfilePage extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               _buildActionButton(
+                context: context,
                 icon: Icons.logout,
                 label: 'تسجيل الخروج',
                 isDestructive: true,
@@ -186,6 +186,7 @@ class ProfilePage extends ConsumerWidget {
     required IconData icon,
     required String label,
     required VoidCallback onPressed,
+    required BuildContext context,
     bool isDestructive = false,
   }) {
     return SizedBox(
@@ -195,13 +196,13 @@ class ProfilePage extends ConsumerWidget {
         icon: Icon(icon),
         label: Text(label),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isDestructive ? Colors.red : Colors.white,
-          foregroundColor: isDestructive ? Colors.white : Colors.blue,
+          backgroundColor: isDestructive ? Colors.red :  Theme.of(context).colorScheme.onPrimary,
+          foregroundColor: isDestructive ? Colors.white :  Theme.of(context).colorScheme.primary,
           minimumSize: const Size(double.infinity, 50),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: BorderSide(
-              color: isDestructive ? Colors.red : Colors.blue.shade200,
+              color: isDestructive ? Colors.red :  Theme.of(context).colorScheme.onPrimary,
             ),
           ),
           elevation: isDestructive ? 2 : 0,

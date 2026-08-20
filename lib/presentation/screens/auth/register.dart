@@ -90,8 +90,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(!widget.isUpdate ? 'إنشاء حساب جديد' : 'تحديث البيانات'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
       ),
       body: Padding(
@@ -227,8 +225,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.onPrimary,
+                      foregroundColor:  Theme.of(context).colorScheme.secondary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
